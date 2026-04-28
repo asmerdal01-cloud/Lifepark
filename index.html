@@ -2,62 +2,71 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Lifepark Intelligent GIS</title>
+    <title>Lifepark Integrated GIS</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; width: 100%; font-family: -apple-system, system-ui, sans-serif; background: #F5F5F7; overflow: hidden; }
+        /* APPLE DESIGN LANGUAGE */
+        body, html { 
+            margin: 0; padding: 0; height: 100%; width: 100%; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background: #F5F5F7; overflow: hidden; 
+        }
         
-        /* HARİTA FULL EKRAN */
-        #map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        #map { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; background: #fff; }
 
-        /* APPLE GLASS PANEL */
+        /* APPLE GLASS PANEL (GLASSMORPHISM) */
         #side-panel { 
             position: absolute; top: 20px; left: 20px; width: 320px; 
             height: calc(100vh - 40px); z-index: 1000;
             background: rgba(255, 255, 255, 0.45);
-            backdrop-filter: blur(25px) saturate(180%);
-            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            backdrop-filter: blur(35px) saturate(180%);
+            -webkit-backdrop-filter: blur(35px) saturate(180%);
             border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 28px; padding: 35px; box-sizing: border-box;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            border-radius: 30px; padding: 40px 30px; box-sizing: border-box;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.08); 
             display: flex; flex-direction: column;
         }
 
+        h1 { margin: 0; font-size: 26px; color: #1b5e20; font-weight: 800; letter-spacing: -1px; }
+        .tagline { font-size: 11px; opacity: 0.5; margin-bottom: 40px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
         .card { 
-            background: rgba(255, 255, 255, 0.4); border-radius: 20px; 
-            padding: 20px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.35); border-radius: 22px; 
+            padding: 22px; margin-bottom: 20px; border: 1px solid rgba(255, 255, 255, 0.4);
+            transition: all 0.3s ease;
         }
-        h1 { margin: 0 0 5px 0; font-size: 24px; color: #1b5e20; }
-        .label { font-size: 10px; text-transform: uppercase; opacity: 0.5; font-weight: 700; letter-spacing: 1px; }
-        .val { font-size: 32px; font-weight: 700; color: #1D1D1F; }
         
-        /* POP-UP STİLİ */
-        .leaflet-popup-content-wrapper { 
-            background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); 
-            border-radius: 15px; color: #1D1D1F; font-family: inherit;
-        }
-        .leaflet-popup-tip { background: rgba(255, 255, 255, 0.8); }
+        .label { font-size: 10px; text-transform: uppercase; opacity: 0.5; font-weight: 800; letter-spacing: 1px; color: #1b5e20; }
+        .val { font-size: 34px; font-weight: 700; color: #1D1D1F; margin-top: 5px; letter-spacing: -1px; }
+        .unit { font-size: 14px; font-weight: 400; opacity: 0.6; margin-left: 3px; }
+
+        /* MARKER & POPUP STYLE */
+        .apple-marker { background: #2ecc71; width: 10px; height: 10px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .leaflet-popup-content-wrapper { border-radius: 20px; background: rgba(255,255,255,0.9); backdrop-filter: blur(10px); border: none; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        
+        .status-footer { margin-top: auto; font-size: 10px; opacity: 0.4; line-height: 1.6; }
     </style>
 </head>
 <body>
 
 <div id="side-panel">
     <h1>LIFEPARK</h1>
-    <div style="font-size: 12px; opacity: 0.6; margin-bottom: 30px;">Akıllı Orman Yönetim Sistemi</div>
+    <div class="tagline">Akıllı CBS & Karbon Paneli</div>
 
     <div class="card">
-        <span class="label">TOPLAM KARBON (KG)</span>
-        <div id="total-co2" class="val">0.00</div>
+        <span class="label">Toplam Karbon</span>
+        <div class="val"><span id="total-co2">0.00</span><span class="unit">kg</span></div>
     </div>
 
     <div class="card">
-        <span class="label">AĞAÇ POPÜLASYONU</span>
-        <div id="tree-count" class="val">0</div>
+        <span class="label">Varlık Sayısı</span>
+        <div class="val" id="tree-count">0</div>
     </div>
 
-    <div style="margin-top: auto; font-size: 11px; opacity: 0.5;">
-        ● Sistem Koordinatlı Çalışıyor<br>
-        Veri: Excel Real-Time
+    <div class="status-footer">
+        ● Kaynak: harita.json<br>
+        ● Senkron: Canlı Excel<br>
+        ● Sistem: ClimEra Digital Twin
     </div>
 </div>
 
@@ -67,75 +76,19 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
 <script>
-    // 1. HARİTA KURULUMU (Altlık olarak temiz beyaz bir harita seçtim)
-    const map = L.map('map', { zoomControl: false }).setView([41.0, 29.0], 13);
-    
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: 'ClimEra Projects'
-    }).addTo(map);
+    // 1. HARİTA TEMELİ (Açık ve Modern Altlık)
+    const map = L.map('map', { zoomControl: false, attributionControl: false }).setView([41, 29], 12);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(map);
 
-    // Ağaç Simgesi (Apple Tarzı Yeşil Nokta)
-    const treeIcon = L.divIcon({
-        className: 'custom-div-icon',
-        html: "<div style='background-color:#2ecc71; width:12px; height:12px; border-radius:50%; border:2px solid white; box-shadow:0 0 5px rgba(0,0,0,0.3);'></div>",
-        iconSize: [12, 12],
-        iconAnchor: [6, 6]
-    });
-
-    let markersLayer = L.layerGroup().addTo(map);
-
-    // 2. EXCEL VERİ MOTORU
-    async function loadData() {
-        try {
-            const res = await fetch('veriler.xlsx?v=' + Date.now());
-            const buf = await res.arrayBuffer();
-            const workbook = XLSX.read(new Uint8Array(buf), {type: 'array'});
-            const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-
-            markersLayer.clearLayers(); // Eski ağaçları temizle
-            let totalCO2 = 0;
-            let bounds = [];
-
-            data.forEach(tree => {
-                const lat = parseFloat(tree.Enlem);
-                const lng = parseFloat(tree.Boylam);
-
-                if (lat && lng) {
-                    totalCO2 += parseFloat(tree.Karbon || 0);
-                    bounds.push([lat, lng]);
-
-                    // Pop-up içeriği (Excel'deki sütunlara göre)
-                    const popupContent = `
-                        <div style="padding:5px;">
-                            <b style="color:#1b5e20; font-size:14px;">${tree.Tür || 'Ağaç'}</b><br>
-                            <hr style="border:0; border-top:1px solid #eee; margin:5px 0;">
-                            ID: ${tree.ID || '-'}<br>
-                            Karbon: ${tree.Karbon} kg<br>
-                            Boy: ${tree.Boy || '-'} m
-                        </div>
-                    `;
-
-                    L.marker([lat, lng], { icon: treeIcon })
-                        .bindPopup(popupContent)
-                        .addTo(markersLayer);
-                }
-            });
-
-            // Bilgi ekranını güncelle
-            document.getElementById('total-co2').innerText = totalCO2.toLocaleString('tr-TR');
-            document.getElementById('tree-count').innerText = data.length;
-
-            // Haritayı ağaçların olduğu yere otomatik odakla
-            if(bounds.length > 0) map.fitBounds(bounds, { padding: [100, 100] });
-
-        } catch (e) {
-            console.warn("Veri bekleniyor...");
-        }
-    }
-
-    // Başlat ve 10 saniyede bir güncelle (Kasmaması için 10 idealdir)
-    loadData();
-    setInterval(loadData, 10000);
-</script>
-</body>
-</html>
+    // 2. GEOJSON VEKTÖR KATMANI (harita.json)
+    fetch('harita.json?v=' + Date.now())
+        .then(res => {
+            if (!res.ok) throw new Error("Dosya bulunamadı");
+            return res.json();
+        })
+        .then(geojsonData => {
+            const geoLayer = L.geoJSON(geojsonData, {
+                style: {
+                    color: "#1b5e20",
+                    weight: 1.5,
+                    opacity
