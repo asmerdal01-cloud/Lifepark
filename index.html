@@ -35,34 +35,35 @@
         .veri-baslik { font-size: 11px; color: #aaaaaa; text-transform: uppercase; margin-bottom: 8px; }
         .veri-deger { font-size: 18px; font-weight: 600; color: #ffffff; }
 
-        /* --- YENİ İKİ PARMAK ZOOM ANİMASYONU --- */
+        /* --- SADELEŞTİRİLMİŞ ZOOM REHBERİ --- */
         .zoom-guide {
             position: fixed; bottom: 60px; right: 60px; z-index: 1001;
             pointer-events: none; opacity: 0; transition: opacity 0.8s ease-in-out;
             display: flex; flex-direction: column; align-items: center;
         }
         
-        .pinch-container { position: relative; width: 100px; height: 100px; }
+        .pinch-container { position: relative; width: 80px; height: 80px; }
         
         .finger {
-            position: absolute; width: 25px; height: 25px; 
-            background: rgba(255, 255, 255, 0.4); border: 2px solid white;
-            border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            position: absolute; width: 20px; height: 20px; 
+            background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.6);
+            border-radius: 50%; top: 50%; left: 50%;
         }
 
-        .finger-1 { animation: pinch-move-1 3s infinite ease-in-out; }
-        .finger-2 { animation: pinch-move-2 3s infinite ease-in-out; }
+        /* Daha sakin bir animasyon */
+        .finger-1 { animation: pinch-move-1 4s infinite ease-in-out; }
+        .finger-2 { animation: pinch-move-2 4s infinite ease-in-out; }
 
         @keyframes pinch-move-1 {
-            0%, 100% { transform: translate(-80%, -80%) scale(1); opacity: 0.3; }
-            50% { transform: translate(-20%, -20%) scale(1.1); opacity: 0.8; }
+            0%, 100% { transform: translate(-100%, -100%); opacity: 0.1; }
+            50% { transform: translate(-20%, -20%); opacity: 0.5; }
         }
         @keyframes pinch-move-2 {
-            0%, 100% { transform: translate(30%, 30%) scale(1); opacity: 0.3; }
-            50% { transform: translate(-30%, -30%) scale(1.1); opacity: 0.8; }
+            0%, 100% { transform: translate(40%, 40%); opacity: 0.1; }
+            50% { transform: translate(-20%, -20%); opacity: 0.5; }
         }
 
-        .zoom-text { color: white; font-size: 11px; margin-top: 15px; opacity: 0.5; letter-spacing: 1.5px; text-align: center; font-weight: 600; }
+        .zoom-text { color: white; font-size: 10px; margin-top: 10px; opacity: 0.4; letter-spacing: 1px; text-align: center; }
 
         /* Ağaç Parlama Efekti */
         @keyframes pulse-marker {
@@ -70,7 +71,7 @@
             50% { stroke-width: 15; stroke-opacity: 0.1; }
             100% { stroke-width: 2; stroke-opacity: 0.8; }
         }
-        .pulsing-marker { animation: pulse-marker 2.5s infinite ease-in-out; }
+        .pulsing-marker { animation: pulse-marker 3s infinite ease-in-out; }
 
         /* Popup Stilleri */
         .leaflet-popup-content-wrapper { background-color: rgba(30, 30, 30, 0.9) !important; backdrop-filter: blur(10px); color: #e0e0e0 !important; border-radius: 12px; }
@@ -92,13 +93,12 @@
         </div>
     </div>
 
-    <!-- REVİZE EDİLEN ZOOM REHBERİ -->
     <div id="zoomGuide" class="zoom-guide">
         <div class="pinch-container">
             <div class="finger finger-1"></div>
             <div class="finger finger-2"></div>
         </div>
-        <div class="zoom-text">ZOOM YAPMAK İÇİN <br> ÇİFT PARMAK KULLANIN</div>
+        <div class="zoom-text">BÜYÜTMEK İÇİN <br> ÇİFT PARMAK KULLANIN</div>
     </div>
 
     <div id="map"></div>
@@ -172,7 +172,7 @@
             }
         });
 
-        // --- 3. REHBER VE İNAKTİF DÖNGÜSÜ (GELİŞTİRİLDİ) ---
+        // --- 3. REHBER VE KENDİ KENDİNE HAREKETİ ENGELLEME ---
         var idleTimer;
         var zoomGuide = document.getElementById('zoomGuide');
 
@@ -182,28 +182,33 @@
         function resetView() {
             if (globalAnaKatman) {
                 map.closePopup(); 
+                // Haritayı orijinal konumuna çek
                 map.fitBounds(globalAnaKatman.getBounds(), { paddingTopLeft: [380, 20], paddingBottomRight: [20, 20], animate: true });
-                setTimeout(() => { map.setZoom(map.getZoom() + 0.4); }, 1000);
                 
-                // Harita sıfırlandığında ve kimse dokunmadığında rehberi göster
-                setTimeout(showGuide, 2000);
+                // Kendi kendine sürekli zoom yapmaması için fitBounds sonrası 
+                // sadece bir kere hafif zoom ekliyoruz.
+                setTimeout(() => { 
+                    map.setZoom(map.getZoom() + 0.4); 
+                    showGuide(); // Her şey durduğunda rehberi göster
+                }, 1500);
             }
         }
 
         function handleInteraction() {
-            hideGuide(); // Herhangi bir işlemde (zoom, sürükleme, dokunma) REHBERİ GİZLE
+            hideGuide(); 
             clearTimeout(idleTimer);
-            idleTimer = setTimeout(resetView, 15000); // 15 saniye bekleyip sıfırla
+            // 15 saniye dokunulmazsa resetView tetiklenir
+            idleTimer = setTimeout(resetView, 15000); 
         }
 
         window.onload = () => {
-            handleInteraction(); // Başlangıç timer'ını kur
-            setTimeout(showGuide, 3000); // İlk açılışta 3 saniye sonra rehber gelsin
+            handleInteraction(); 
+            setTimeout(showGuide, 4000); // İlk açılışta sakinleşince göster
         };
         
         // Etkileşim Dinleyicileri
         document.addEventListener('touchstart', handleInteraction, {passive: true});
-        document.addEventListener('mousemove', handleInteraction);
+        document.addEventListener('mousedown', handleInteraction);
         map.on('zoomstart', handleInteraction);
         map.on('dragstart', handleInteraction);
     </script>
