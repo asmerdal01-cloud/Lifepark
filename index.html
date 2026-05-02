@@ -3,9 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SenTree - GIS Tabanlı Kentsel Ekosistem Hizmetleri Takip Sistemi</title>
+    <title>SenTree - Kentsel Ekosistem Hizmetleri</title>
     
+    <!-- Leaflet CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Marker Cluster CSS & JS (YENİ EKLENDİ) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
     <style>
@@ -30,11 +38,16 @@
         .sidebar-powered { text-align: right; margin-top: 10px; font-size: 9px; color: #777; font-style: italic; }
         .sidebar-content { padding: 15px; flex-grow: 1; overflow-y: auto; }
 
-        /* VERİ KARTLARI */
         .excel-kutu-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 5px; }
         .veri-kutusu { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 12px; text-align: center; }
         .veri-baslik { font-size: 10px; color: #999; text-transform: uppercase; margin-bottom: 6px; }
         .veri-deger { font-size: 16px; font-weight: 600; color: #ffffff; }
+
+        /* KÜMELEME SİMGELERİ ÖZELLEŞTİRME (Kiosk moduna uygun yeşil tonlar) */
+        .marker-cluster-small { background-color: rgba(46, 204, 113, 0.6); }
+        .marker-cluster-small div { background-color: rgba(46, 204, 113, 0.9); color: white; }
+        .marker-cluster-medium { background-color: rgba(39, 174, 96, 0.6); }
+        .marker-cluster-medium div { background-color: rgba(39, 174, 96, 0.9); color: white; }
 
         /* --- SADELEŞTİRİLMİŞ ZOOM REHBERİ --- */
         .zoom-guide {
@@ -68,7 +81,7 @@
 
     <div class="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-title">Project SenTree</div>
+            <div class="sidebar-title">Project Sen-Tree</div>
             <div class="sidebar-location">📍LIFEPARK İSTANBUL</div>
             <p class="sidebar-subtitle">GIS TABANLI KENTSEL EKOSİSTEM HİZMETLERİ TAKİP SİSTEMİ</p>
             <div class="sidebar-powered">Powered by CLIMERA Projects</div>
@@ -83,12 +96,10 @@
             <div class="finger finger-1"></div>
             <div class="finger finger-2"></div>
         </div>
-        <div class="zoom-text">ETKİLEŞİM İÇİN <br> DOKUNUN</div>
+        <div class="zoom-text">DETAYLAR İÇİN <br> YAKINLAŞTIRIN</div>
     </div>
 
     <div id="map"></div>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
         // --- 1. HARİTA AYARLARI ---
@@ -103,6 +114,13 @@
         });
 
         var globalAnaKatman; 
+        
+        // KÜMELEME GRUBU OLUŞTURMA (YENİ EKLENDİ)
+        var markers = L.markerClusterGroup({
+            showCoverageOnHover: false, // Üzerine gelince alanı gösterme (Kiosk için daha temiz)
+            maxClusterRadius: 50,       // Kümeleme hassasiyeti (50px içindeki ağaçları toplar)
+            disableClusteringAtZoom: 18 // Çok yakına girildiğinde kümelemeyi kapat
+        });
 
         // --- 2. VERİ YÜKLEME ---
         fetch('veri.geojson')
@@ -112,7 +130,6 @@
                     style: { color: "darkgray", weight: 1, opacity: 0.6, fillColor: "gray", fillOpacity: 0.1 }
                 }).addTo(map);
                 
-                // İlk açılış konumu (Uzak ve ferah görünüm)
                 map.fitBounds(globalAnaKatman.getBounds(), {
                     paddingTopLeft: [360, 20], 
                     paddingBottomRight: [20, 20]
@@ -139,12 +156,18 @@
 
                             var marker = L.circleMarker([lat, lng], {
                                 radius: 8, fillColor: "#2ecc71", color: "#2ecc71", weight: 2, fillOpacity: 0.8, className: 'pulsing-marker'
-                            }).bindPopup(popupHTML).addTo(map);
+                            }).bindPopup(popupHTML);
 
                             marker.on('touchstart', function() { this.setStyle({weight: 15}); });
                             marker.on('touchend', function() { this.setStyle({weight: 2}); });
+                            
+                            // Marker'ı direkt haritaya değil, kümeleme grubuna ekle
+                            markers.addLayer(marker);
                         }
                     }
+                    // Grubu haritaya ekle
+                    map.addLayer(markers);
+
                     var panelSutunlari = [9, 10, 11, 12, 13, 14]; 
                     var sonGuncelVeri = veriler.slice().reverse().find(s => s[9]);
                     if (sonGuncelVeri) {
@@ -159,7 +182,7 @@
             }
         });
 
-        // --- 3. REHBER VE SIFIRLAMA (Hareketsiz Stabil Versiyon) ---
+        // --- 3. REHBER VE SIFIRLAMA ---
         var idleTimer;
         var zoomGuide = document.getElementById('zoomGuide');
 
@@ -169,16 +192,12 @@
         function resetView() {
             if (globalAnaKatman) {
                 map.closePopup(); 
-                // Sadece konuma gider, ekstra zoom sarsıntısı yapmaz
                 map.fitBounds(globalAnaKatman.getBounds(), { 
                     paddingTopLeft: [360, 20], 
                     paddingBottomRight: [20, 20], 
                     animate: true 
                 });
-                
-                setTimeout(() => { 
-                    showGuide(); 
-                }, 1500);
+                setTimeout(() => { showGuide(); }, 1500);
             }
         }
 
