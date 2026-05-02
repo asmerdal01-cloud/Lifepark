@@ -12,71 +12,88 @@
         body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; }
         #map { height: 100vh; width: 100vw; background-color: #161616; z-index: 1; }
 
-        /* --- SOL PANEL --- */
+        /* --- SOL PANEL (Sola Kaydırılmış) --- */
         .sidebar {
-            position: fixed; top: 20px; left: 20px; bottom: 20px; width: 320px;       
-            background-color: rgba(30, 30, 30, 0.6); 
+            position: fixed; 
+            top: 20px; 
+            left: 15px; /* Daha sola çekildi */
+            bottom: 20px; 
+            width: 310px;       
+            background-color: rgba(30, 30, 30, 0.65); 
             backdrop-filter: blur(15px) saturate(180%); 
             -webkit-backdrop-filter: blur(15px) saturate(180%); 
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px; 
-            color: #e0e0e0; z-index: 1000; display: flex; flex-direction: column;
-            box-sizing: border-box; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); 
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            border-radius: 20px; 
+            color: #e0e0e0; 
+            z-index: 1000; 
+            display: flex; 
+            flex-direction: column;
+            box-sizing: border-box; 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); 
         }
 
-        .sidebar-header { padding: 25px 20px 20px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background-color: rgba(0, 0, 0, 0.2); }
-        .sidebar-title { margin: 0; font-size: 26px; font-weight: 700; color: #ffffff; letter-spacing: 0.5px; }
-        .sidebar-location { margin: 4px 0 0 0; font-size: 14px; font-weight: 600; color: #ffffff; opacity: 0.9; }
-        .sidebar-subtitle { margin: 12px 0 0 0; font-size: 10px; color: #2ecc71; text-transform: uppercase; letter-spacing: 1px; line-height: 1.4; font-weight: 700; }
-        .sidebar-powered { text-align: right; margin-top: 12px; font-size: 10px; color: #888888; font-style: italic; }
-        .sidebar-content { padding: 20px; flex-grow: 1; overflow-y: auto; }
+        .sidebar-header { padding: 25px 20px 15px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background-color: rgba(0, 0, 0, 0.2); }
+        .sidebar-title { margin: 0; font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: 0.5px; }
+        .sidebar-location { margin: 4px 0 0 0; font-size: 13px; font-weight: 600; color: #ffffff; opacity: 0.8; }
+        .sidebar-subtitle { margin: 12px 0 0 0; font-size: 9.5px; color: #2ecc71; text-transform: uppercase; letter-spacing: 0.8px; line-height: 1.4; font-weight: 700; }
+        .sidebar-powered { text-align: right; margin-top: 10px; font-size: 9px; color: #777; font-style: italic; }
+        .sidebar-content { padding: 15px; flex-grow: 1; overflow-y: auto; }
 
-        .excel-kutu-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
-        .veri-kutusu { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 15px; text-align: center; }
-        .veri-baslik { font-size: 11px; color: #aaaaaa; text-transform: uppercase; margin-bottom: 8px; }
-        .veri-deger { font-size: 18px; font-weight: 600; color: #ffffff; }
+        /* VERİ KARTLARI */
+        .excel-kutu-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 5px; }
+        .veri-kutusu { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 12px; text-align: center; }
+        .veri-baslik { font-size: 10px; color: #999; text-transform: uppercase; margin-bottom: 6px; }
+        .veri-deger { font-size: 16px; font-weight: 600; color: #ffffff; }
 
-        /* --- SADELEŞTİRİLMİŞ ZOOM REHBERİ --- */
+        /* --- ZOOM REHBERİ ANİMASYONU --- */
         .zoom-guide {
-            position: fixed; bottom: 60px; right: 60px; z-index: 1001;
-            pointer-events: none; opacity: 0; transition: opacity 0.8s ease-in-out;
-            display: flex; flex-direction: column; align-items: center;
+            position: fixed; 
+            bottom: 30px; 
+            right: 30px; 
+            z-index: 1001;
+            pointer-events: none; 
+            opacity: 0; 
+            transition: opacity 1s ease-in-out;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
         }
         
-        .pinch-container { position: relative; width: 80px; height: 80px; }
+        .pinch-container { position: relative; width: 70px; height: 70px; background: rgba(255,255,255,0.03); border-radius: 50%; }
         
         .finger {
-            position: absolute; width: 20px; height: 20px; 
-            background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.6);
+            position: absolute; width: 18px; height: 18px; 
+            background: rgba(255, 255, 255, 0.15); 
+            border: 1px solid rgba(255, 255, 255, 0.5);
             border-radius: 50%; top: 50%; left: 50%;
         }
 
-        /* Daha sakin bir animasyon */
-        .finger-1 { animation: pinch-move-1 4s infinite ease-in-out; }
-        .finger-2 { animation: pinch-move-2 4s infinite ease-in-out; }
+        .finger-1 { animation: pinch-move-1 3.5s infinite ease-in-out; }
+        .finger-2 { animation: pinch-move-2 3.5s infinite ease-in-out; }
 
         @keyframes pinch-move-1 {
-            0%, 100% { transform: translate(-100%, -100%); opacity: 0.1; }
-            50% { transform: translate(-20%, -20%); opacity: 0.5; }
+            0%, 100% { transform: translate(-110%, -110%); opacity: 0.1; }
+            50% { transform: translate(-10%, -10%); opacity: 0.6; }
         }
         @keyframes pinch-move-2 {
             0%, 100% { transform: translate(40%, 40%); opacity: 0.1; }
-            50% { transform: translate(-20%, -20%); opacity: 0.5; }
+            50% { transform: translate(-10%, -10%); opacity: 0.6; }
         }
 
-        .zoom-text { color: white; font-size: 10px; margin-top: 10px; opacity: 0.4; letter-spacing: 1px; text-align: center; }
+        .zoom-text { color: white; font-size: 9px; margin-top: 12px; opacity: 0.4; letter-spacing: 1px; text-align: center; font-weight: 500; }
 
         /* Ağaç Parlama Efekti */
         @keyframes pulse-marker {
             0% { stroke-width: 2; stroke-opacity: 0.8; }
-            50% { stroke-width: 15; stroke-opacity: 0.1; }
+            50% { stroke-width: 12; stroke-opacity: 0.1; }
             100% { stroke-width: 2; stroke-opacity: 0.8; }
         }
         .pulsing-marker { animation: pulse-marker 3s infinite ease-in-out; }
 
-        /* Popup Stilleri */
-        .leaflet-popup-content-wrapper { background-color: rgba(30, 30, 30, 0.9) !important; backdrop-filter: blur(10px); color: #e0e0e0 !important; border-radius: 12px; }
-        .agac-popup-baslik { font-size: 15px; font-weight: 600; color: #2ecc71; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 8px; margin-bottom: 10px; }
-        .agac-popup-satir { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; }
+        /* Popup Tasarımı */
+        .leaflet-popup-content-wrapper { background-color: rgba(25, 25, 25, 0.95) !important; backdrop-filter: blur(8px); color: #e0e0e0 !important; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+        .agac-popup-baslik { font-size: 14px; font-weight: 600; color: #2ecc71; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 6px; margin-bottom: 8px; }
+        .agac-popup-satir { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -93,12 +110,13 @@
         </div>
     </div>
 
+    <!-- REHBER ANİMASYONU -->
     <div id="zoomGuide" class="zoom-guide">
         <div class="pinch-container">
             <div class="finger finger-1"></div>
             <div class="finger finger-2"></div>
         </div>
-        <div class="zoom-text">BÜYÜTMEK İÇİN <br> ÇİFT PARMAK KULLANIN</div>
+        <div class="zoom-text">ETKİLEŞİM İÇİN <br> ÇİFT PARMAK KULLANIN</div>
     </div>
 
     <div id="map"></div>
@@ -106,7 +124,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // --- 1. HARİTA KURULUMU ---
+        // --- 1. HARİTA AYARLARI ---
         var guneyBati = L.latLng(41.1600, 28.9800); 
         var kuzeyDogu = L.latLng(41.1800, 29.0100); 
         var sinirlar = L.latLngBounds(guneyBati, kuzeyDogu);
@@ -124,12 +142,15 @@
             .then(response => response.json())
             .then(data => {
                 globalAnaKatman = L.geoJSON(data, {
-                    style: { color: "darkgray", weight: 1, opacity: 0.8, fillColor: "gray", fillOpacity: 0.15 }
+                    style: { color: "darkgray", weight: 1, opacity: 0.6, fillColor: "gray", fillOpacity: 0.1 }
                 }).addTo(map);
+                
                 map.fitBounds(globalAnaKatman.getBounds(), {
-                    paddingTopLeft: [380, 20], paddingBottomRight: [20, 20]
+                    paddingTopLeft: [360, 20], // Panel payı ayarlandı
+                    paddingBottomRight: [20, 20]
                 });
-                setTimeout(() => { map.setZoom(map.getZoom() + 0.4); }, 500);
+
+                setTimeout(() => { map.setZoom(map.getZoom() + 0.45); }, 800);
             });
 
         var csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTd-AbM2ztRwxYmIp-58BvishVCJG3xKSQj-WgrI3_J6_ODF-zHTgM9rYmb-lI9LwRvdB0LMZFJFsn4/pub?output=csv";
@@ -144,17 +165,17 @@
                         var satir = veriler[i];
                         var lat = parseFloat(satir[6]); var lng = parseFloat(satir[7]); 
                         if (!isNaN(lat) && !isNaN(lng)) {
-                            var popupHTML = "<div style='min-width:200px'><h3 class='agac-popup-baslik'>Biyometrik Analiz</h3>";
+                            var popupHTML = "<div style='min-width:180px'><h3 class='agac-popup-baslik'>Biyometrik Analiz</h3>";
                             [0,1,2,3,4,5,8].forEach(idx => {
                                 if(satir[idx]) popupHTML += `<div class="agac-popup-satir"><span>${basliklar[idx]}</span><span style="font-weight:600">${satir[idx]}</span></div>`;
                             });
                             popupHTML += "</div>";
 
                             var marker = L.circleMarker([lat, lng], {
-                                radius: 8, fillColor: "#2ecc71", color: "#2ecc71", weight: 2, fillOpacity: 0.9, className: 'pulsing-marker'
+                                radius: 8, fillColor: "#2ecc71", color: "#2ecc71", weight: 2, fillOpacity: 0.8, className: 'pulsing-marker'
                             }).bindPopup(popupHTML).addTo(map);
 
-                            marker.on('touchstart', function() { this.setStyle({weight: 20}); });
+                            marker.on('touchstart', function() { this.setStyle({weight: 15}); });
                             marker.on('touchend', function() { this.setStyle({weight: 2}); });
                         }
                     }
@@ -172,7 +193,7 @@
             }
         });
 
-        // --- 3. REHBER VE KENDİ KENDİNE HAREKETİ ENGELLEME ---
+        // --- 3. REHBER VE RESET MANTIĞI ---
         var idleTimer;
         var zoomGuide = document.getElementById('zoomGuide');
 
@@ -182,31 +203,26 @@
         function resetView() {
             if (globalAnaKatman) {
                 map.closePopup(); 
-                // Haritayı orijinal konumuna çek
-                map.fitBounds(globalAnaKatman.getBounds(), { paddingTopLeft: [380, 20], paddingBottomRight: [20, 20], animate: true });
+                map.fitBounds(globalAnaKatman.getBounds(), { paddingTopLeft: [360, 20], paddingBottomRight: [20, 20], animate: true });
                 
-                // Kendi kendine sürekli zoom yapmaması için fitBounds sonrası 
-                // sadece bir kere hafif zoom ekliyoruz.
                 setTimeout(() => { 
-                    map.setZoom(map.getZoom() + 0.4); 
-                    showGuide(); // Her şey durduğunda rehberi göster
-                }, 1500);
+                    map.setZoom(map.getZoom() + 0.45); 
+                    showGuide(); 
+                }, 2000);
             }
         }
 
         function handleInteraction() {
             hideGuide(); 
             clearTimeout(idleTimer);
-            // 15 saniye dokunulmazsa resetView tetiklenir
             idleTimer = setTimeout(resetView, 15000); 
         }
 
         window.onload = () => {
             handleInteraction(); 
-            setTimeout(showGuide, 4000); // İlk açılışta sakinleşince göster
+            setTimeout(showGuide, 4500); 
         };
         
-        // Etkileşim Dinleyicileri
         document.addEventListener('touchstart', handleInteraction, {passive: true});
         document.addEventListener('mousedown', handleInteraction);
         map.on('zoomstart', handleInteraction);
