@@ -12,7 +12,6 @@
         body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         #map { height: 100vh; width: 100vw; background-color: #161616; z-index: 1; }
 
-        /* --- SOL PANEL: ESKİ ŞIK HALİ --- */
         .sidebar {
             position: fixed; top: 20px; left: 20px; bottom: 20px; width: 320px;       
             background-color: rgba(30, 30, 30, 0.6); 
@@ -24,23 +23,28 @@
         }
 
         .sidebar-header { padding: 25px 20px 20px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background-color: rgba(0, 0, 0, 0.2); }
-        
-        /* BAŞLIKLAR */
         .sidebar-title { margin: 0; font-size: 26px; font-weight: 700; color: #ffffff; letter-spacing: 0.5px; }
         .sidebar-location { margin: 4px 0 0 0; font-size: 14px; font-weight: 600; color: #ffffff; opacity: 0.9; }
         .sidebar-subtitle { margin: 12px 0 0 0; font-size: 10px; color: #2ecc71; text-transform: uppercase; letter-spacing: 1px; line-height: 1.4; font-weight: 700; }
         .sidebar-powered { text-align: right; margin-top: 12px; font-size: 10px; color: #888888; font-style: italic; }
-
         .sidebar-content { padding: 20px; flex-grow: 1; overflow-y: auto; }
 
-        /* VERİ KARTLARI */
         .excel-kutu-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
-        .veri-kutusu { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 15px; text-align: center; transition: all 0.3s ease; }
-        .veri-kutusu:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
+        .veri-kutusu { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 15px; text-align: center; }
         .veri-baslik { font-size: 11px; color: #aaaaaa; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
         .veri-deger { font-size: 18px; font-weight: 600; color: #ffffff; }
 
-        /* POPUP TASARIMI */
+        /* --- PARLAMA ANİMASYONU --- */
+        @keyframes pulse-marker {
+            0% { stroke-width: 2; stroke-opacity: 0.8; }
+            50% { stroke-width: 15; stroke-opacity: 0.1; }
+            100% { stroke-width: 2; stroke-opacity: 0.8; }
+        }
+
+        .pulsing-marker {
+            animation: pulse-marker 2.5s infinite ease-in-out;
+        }
+
         .leaflet-popup-content-wrapper, .leaflet-popup-tip {
             background-color: rgba(30, 30, 30, 0.9) !important;
             backdrop-filter: blur(10px); color: #e0e0e0 !important; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;
@@ -53,9 +57,8 @@
 
     <div class="sidebar">
         <div class="sidebar-header">
-            <!-- İSTEDİĞİN TÜM EKLEMELER BURADA -->
-            <div class="sidebar-title">Project Sen-Tree</div>
-            <div class="sidebar-location">📍LIFEPARK İSTANBUL</div>
+            <div class="sidebar-title">Project SenTree</div>
+            <div class="sidebar-location">LIFEPARK İSTANBUL</div>
             <p class="sidebar-subtitle">GIS TABANLI KENTSEL EKOSİSTEM HİZMETLERİ TAKİP SİSTEMİ</p>
             <div class="sidebar-powered">Powered by CLIMERA Projects</div>
         </div>
@@ -69,19 +72,17 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // Harita Sınırları
         var guneyBati = L.latLng(41.1600, 28.9800); 
         var kuzeyDogu = L.latLng(41.1800, 29.0100); 
         var sinirlar = L.latLngBounds(guneyBati, kuzeyDogu);
 
         var map = L.map('map', { 
             zoomControl: false, attributionControl: false, 
-            maxBounds: sinirlar, maxBoundsViscosity: 1.0, minZoom: 16.5                
+            maxBounds: sinirlar, maxBoundsViscosity: 1.0, minZoom: 13                
         });
 
         var globalAnaKatman; 
 
-        // GeoJSON Yükleme
         fetch('veri.geojson')
             .then(response => response.json())
             .then(data => {
@@ -94,7 +95,6 @@
                 });
             });
 
-        // Google Sheets Verileri
         var csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTd-AbM2ztRwxYmIp-58BvishVCJG3xKSQj-WgrI3_J6_ODF-zHTgM9rYmb-lI9LwRvdB0LMZFJFsn4/pub?output=csv";
 
         Papa.parse(csvUrl, {
@@ -104,7 +104,6 @@
                 if(veriler && veriler.length > 1) {
                     var basliklar = veriler[0]; 
                     
-                    // Ağaçlar ve Popuplar
                     for (var i = 1; i < veriler.length; i++) {
                         var satir = veriler[i];
                         var lat = parseFloat(satir[6]); 
@@ -119,13 +118,21 @@
                             });
                             popupHTML += "</div>";
 
-                            L.circleMarker([lat, lng], {
-                                radius: 7, fillColor: "#2ecc71", color: "#161616", weight: 2, fillOpacity: 0.9
+                            var marker = L.circleMarker([lat, lng], {
+                                radius: 8, 
+                                fillColor: "#2ecc71", 
+                                color: "#2ecc71", // Parlama animasyonu için ana renk
+                                weight: 2, 
+                                fillOpacity: 0.9,
+                                className: 'pulsing-marker' // CSS animasyonu eklendi
                             }).bindPopup(popupHTML).addTo(map);
+
+                            // Dokunma alanını görünmez bir şekilde artır
+                            marker.on('mouseover', function(e) { this.setStyle({weight: 20}); });
+                            marker.on('mouseout', function(e) { this.setStyle({weight: 2}); });
                         }
                     }
 
-                    // Panel Metrikleri
                     var panelSutunlari = [9, 10, 11, 12, 13, 14]; 
                     var sonGuncelVeri = veriler.slice().reverse().find(s => s[9]);
 
@@ -141,7 +148,6 @@
             }
         });
 
-        // 15 Saniye Başa Dönme
         var idleTimer;
         function resetView() {
             if (globalAnaKatman) {
