@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SenTree - GIS Tabanlı Kentsel Ekosistem Hizmetleri Takip Sistemi</title>
+    <title>SenTree - Kentsel Ekosistem Hizmetleri</title>
     
+    <!-- Leaflet CSS & JS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
-    <!-- Marker Cluster CSS (Yeni Eklendi) -->
+    <!-- Marker Cluster CSS & JS (YENİ EKLENDİ) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
-    
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- Marker Cluster JS (Yeni Eklendi) -->
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
     <style>
@@ -43,11 +43,11 @@
         .veri-baslik { font-size: 10px; color: #999; text-transform: uppercase; margin-bottom: 6px; }
         .veri-deger { font-size: 16px; font-weight: 600; color: #ffffff; }
 
-        /* KÜMELEME TASARIMI ÖZELLEŞTİRME */
+        /* KÜMELEME SİMGELERİ ÖZELLEŞTİRME (Kiosk moduna uygun yeşil tonlar) */
         .marker-cluster-small { background-color: rgba(46, 204, 113, 0.6); }
-        .marker-cluster-small div { background-color: rgba(46, 204, 113, 0.8); color: #fff; font-weight: bold; }
+        .marker-cluster-small div { background-color: rgba(46, 204, 113, 0.9); color: white; }
         .marker-cluster-medium { background-color: rgba(39, 174, 96, 0.6); }
-        .marker-cluster-medium div { background-color: rgba(39, 174, 96, 0.8); color: #fff; font-weight: bold; }
+        .marker-cluster-medium div { background-color: rgba(39, 174, 96, 0.9); color: white; }
 
         /* --- SADELEŞTİRİLMİŞ ZOOM REHBERİ --- */
         .zoom-guide {
@@ -81,7 +81,7 @@
 
     <div class="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-title">Project SenTree</div>
+            <div class="sidebar-title">Project Sen-Tree</div>
             <div class="sidebar-location">📍LIFEPARK İSTANBUL</div>
             <p class="sidebar-subtitle">GIS TABANLI KENTSEL EKOSİSTEM HİZMETLERİ TAKİP SİSTEMİ</p>
             <div class="sidebar-powered">Powered by CLIMERA Projects</div>
@@ -96,7 +96,7 @@
             <div class="finger finger-1"></div>
             <div class="finger finger-2"></div>
         </div>
-        <div class="zoom-text">ETKİLEŞİM İÇİN <br> DOKUNUN</div>
+        <div class="zoom-text">DETAYLAR İÇİN <br> YAKINLAŞTIRIN</div>
     </div>
 
     <div id="map"></div>
@@ -115,12 +115,11 @@
 
         var globalAnaKatman; 
         
-        // Kümeleme Grubu Oluşturma (Yeni)
+        // KÜMELEME GRUBU OLUŞTURMA (YENİ EKLENDİ)
         var markers = L.markerClusterGroup({
-            showCoverageOnHover: false,
-            zoomToBoundsOnClick: true,
-            spiderfyOnMaxZoom: true,
-            maxClusterRadius: 50 // Piksel bazlı kümeleme yarıçapı
+            showCoverageOnHover: false, // Üzerine gelince alanı gösterme (Kiosk için daha temiz)
+            maxClusterRadius: 50,       // Kümeleme hassasiyeti (50px içindeki ağaçları toplar)
+            disableClusteringAtZoom: 18 // Çok yakına girildiğinde kümelemeyi kapat
         });
 
         // --- 2. VERİ YÜKLEME ---
@@ -166,8 +165,7 @@
                             markers.addLayer(marker);
                         }
                     }
-                    
-                    // Kümeleme grubunu haritaya ekle
+                    // Grubu haritaya ekle
                     map.addLayer(markers);
 
                     var panelSutunlari = [9, 10, 11, 12, 13, 14]; 
@@ -199,10 +197,7 @@
                     paddingBottomRight: [20, 20], 
                     animate: true 
                 });
-                
-                setTimeout(() => { 
-                    showGuide(); 
-                }, 1500);
+                setTimeout(() => { showGuide(); }, 1500);
             }
         }
 
