@@ -76,7 +76,7 @@
 
         var map = L.map('map', { 
             zoomControl: false, attributionControl: false, 
-            maxBounds: sinirlar, maxBoundsViscosity: 1.0, minZoom: 17                
+            maxBounds: sinirlar, maxBoundsViscosity: 1.0, minZoom: 16                
         });
 
         var globalAnaKatman; 
@@ -90,7 +90,7 @@
                 }).addTo(map);
 
                 map.fitBounds(globalAnaKatman.getBounds(), {
-                    paddingTopLeft: [580, 20], paddingBottomRight: [20, 20]
+                    paddingTopLeft: [380, 20], paddingBottomRight: [20, 20]
                 });
             });
 
