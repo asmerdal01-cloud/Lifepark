@@ -7,34 +7,26 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-   <style>
+    <style>
         body { margin: 0; padding: 0; height: 100vh; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; overflow: hidden; }
         
         #map { height: 100vh; width: 100vw; background: #ffffff; z-index: 1; }
         
-        /* APPLE TARZI BUZLU CAM (FROSTED GLASS) PANELİ */
-      #sidebar { 
+        /* APPLE TARZI BUZLU CAM PANELİ */
+        #sidebar { 
             position: absolute; 
             top: 25px; 
             left: 25px; 
             width: 340px; 
             height: calc(100vh - 50px); 
             border-radius: 24px; 
-            
-            /* Camın Kendisi */
-            background: rgba(255, 255, 255, 0.45); /* Şeffaflığı biraz daha artırdık ki arka plan daha çok geçsin */
-            backdrop-filter: blur(40px) saturate(200%); /* Bulanıklığı (40px) ve renk doygunluğunu (200%) artırdık */
+            background: rgba(255, 255, 255, 0.45); 
+            backdrop-filter: blur(40px) saturate(200%); 
             -webkit-backdrop-filter: blur(40px) saturate(200%);
-            
-            /* Cama vuran ışık ve yansımalar */
-            border: 1px solid rgba(255, 255, 255, 0.9); /* Çerçeveyi daha parlak beyaz yaptık */
-            border-top: 1px solid rgba(255, 255, 255, 1); /* Üstten vuran ışık efekti */
-            border-left: 1px solid rgba(255, 255, 255, 1); /* Soldan vuran ışık efekti */
-            
-            box-shadow: 
-                0 15px 35px rgba(0, 0, 0, 0.1), /* Genel derinlik gölgesi */
-                inset 0 0 15px rgba(255, 255, 255, 0.4); /* Camın "içine" vuran hafif bir parlama (Kritik dokunuş) */
-            
+            border: 1px solid rgba(255, 255, 255, 0.9); 
+            border-top: 1px solid rgba(255, 255, 255, 1); 
+            border-left: 1px solid rgba(255, 255, 255, 1); 
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1), inset 0 0 15px rgba(255, 255, 255, 0.4); 
             color: #1d1d1f; 
             padding: 30px; 
             box-sizing: border-box; 
@@ -42,178 +34,103 @@
             z-index: 1000; 
         }
         
-        /* Apple Tipografisi (Yazı Tasarımları) */
-        .panel-baslik { 
-            font-size: 22px; 
-            font-weight: 600;
-            margin-bottom: 25px; 
-            color: #1d1d1f; 
-            border-bottom: 1px solid rgba(0, 0, 0, 0.08); /* Çok ince ve zarif ayırıcı çizgi */
-            padding-bottom: 15px; 
-            letter-spacing: -0.5px;
-        }
+        .panel-baslik { font-size: 22px; font-weight: 600; margin-bottom: 25px; color: #1d1d1f; border-bottom: 1px solid rgba(0, 0, 0, 0.08); padding-bottom: 15px; letter-spacing: -0.5px; }
         .bilgi-kutu { margin-bottom: 18px; }
-        .bilgi-etiket { 
-            font-size: 11px; 
-            color: #86868b; /* Apple'ın ikincil gri tonu */
-            text-transform: uppercase; 
-            font-weight: 600; 
-            letter-spacing: 0.5px; 
-        }
-        .bilgi-deger { 
-            font-size: 16px; 
-            font-weight: 500; 
-            margin-top: 4px; 
-            color: #1d1d1f; 
-        }
-
-        /* Kaydırma Çubuğu - Beyaz Temaya Uygun */
+        .bilgi-etiket { font-size: 11px; color: #86868b; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+        .bilgi-deger { font-size: 16px; font-weight: 500; margin-top: 4px; color: #1d1d1f; }
+        
         #sidebar::-webkit-scrollbar { width: 5px; }
         #sidebar::-webkit-scrollbar-track { background: transparent; }
         #sidebar::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.15); border-radius: 10px; }
-        #sidebar::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.3); }
         
-        /* Haritadaki Ağaç Baloncukları (Popup) Tasarımı - İsteğe Bağlı Apple Uyumu */
-        .leaflet-popup-content-wrapper {
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-            color: #1d1d1f;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        }
+        .leaflet-popup-content-wrapper { border-radius: 16px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.5); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1); color: #1d1d1f; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
         .leaflet-popup-tip { background: rgba(255, 255, 255, 0.85); }
     </style>
 </head>
 <body>
 
-<!-- Sol Taraf: Sabit Bilgi Paneli -->
 <div id="sidebar">
-    <div class="panel-baslik">LIFEPARK</div>
+    <div class="panel-baslik">M. AKİF ERSOY TABİAT PARKI</div>
     <div id="panel-icerik">Veriler yükleniyor...</div>
 </div>
 
-<!-- Sağ Taraf: Harita Alanı -->
 <div id="map"></div>
 
+<!-- İŞTE EKSİK OLAN O KRİTİK ETİKET BURADA BAŞLIYOR -->
 <script>
-   // --- 1. HARİTA AYARLARI ---
-    
-    // Sizin verdiğiniz Sol Alt ve Sağ Üst koordinatlar
     const imageBounds = [[41.1666, 28.9914], [41.1730, 29.0029]];
     
-    // Haritayı başlat
     const map = L.map('map', {
-        minZoom: 15, // Kullanıcının çok fazla zoom out yapmasını fiziksel olarak da engellemek için bunu 15'e çektik
+        minZoom: 15, 
         maxZoom: 22,
-        zoomControl: false, // + ve - butonlarını gizler
-        maxBounds: imageBounds, // Haritayı görselin sınırlarına kilitler
-        maxBoundsViscosity: 1.0 // Sınıra çarpınca geri sekme efektini sertleştirir (boşluğa gitmeyi tamamen engeller)
+        zoomControl: false, 
+        maxBounds: imageBounds, 
+        maxBoundsViscosity: 1.0 
     }).fitBounds(imageBounds);
 
-    // PNG Görselinizi haritaya yerleştirin
     const mapImageUrl = 'harita.png'; 
     L.imageOverlay(mapImageUrl, imageBounds).addTo(map);
 
-
-    // --- 2. VERİ ÇEKME VE İŞLEME ---
-
     const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTd-AbM2ztRwxYmIp-58BvishVCJG3xKSQj-WgrI3_J6_ODF-zHTgM9rYmb-lI9LwRvdB0LMZFJFsn4/pub?output=csv';
 
-    Papa.parse(csvUrl, {
-        download: true,
-        header: true,
-        complete: function(results) {
-            const data = results.data;
-            
-            // Eğer veri başarıyla geldiyse sol paneli güncelle
-            if (data.length > 0) {
-                const ilkSatir = data[0]; 
+    function updateData() {
+        Papa.parse(csvUrl, {
+            download: true,
+            header: true,
+            complete: function(results) {
+                const data = results.data;
                 
-                // NOT: Excel'deki J, K, L vb. sütun başlıklarınızı aşağıya birebir yazmalısınız.
-                document.getElementById('panel-icerik').innerHTML = `
-                    <div class="bilgi-kutu">
-                        <div class="bilgi-etiket">Mevcut CO2 Stoku</div>
-                        <div class="bilgi-deger">${ilkSatir['Mevcut CO2 Stoku'] || '-'}</div>
-                    </div>
-                    <div class="bilgi-kutu">
-                        <div class="bilgi-etiket">Yıllık CO2 Stok Artışı</div>
-                        <div class="bilgi-deger">${ilkSatir['Yıllık CO2 Stok Artışı'] || '-'}</div>
-                    </div>
-                    <div class="bilgi-kutu">
-                        <div class="bilgi-etiket">Yıllık O2 Üretimi</div>
-                        <div class="bilgi-deger">${ilkSatir['Yıllık O2 Üretimi'] || '-'}</div>
-                    </div>
-                    <div class="bilgi-kutu">
-                        <div class="bilgi-etiket">Mevcut CO2 Piyasa Değeri</div>
-                        <div class="bilgi-deger">${ilkSatir['Mevcut CO2 Piyasa Değeri'] || '-'}</div>
-                    </div>
-                    <div class="bilgi-kutu">
-                        <div class="bilgi-etiket">Mevcut Hava Kalitesi</div>
-                        <div class="bilgi-deger">${ilkSatir['Mevcut Hava Kalitesi'] || '-'}</div>
-                    </div>
-                    <div class="bilgi-kutu">
-                        <div class="bilgi-etiket">Mevcut Ağaç Sayısı</div>
-                        <div class="bilgi-deger">${ilkSatir['Mevcut Ağaç Sayısı'] || '-'}</div>
-                    </div>
-                `;
-            }
-
-            // Ağaçları Haritaya Ekle
-            data.forEach(agac => {
-                const lat = parseFloat(agac['Enlem']);
-                const lng = parseFloat(agac['Boylam']);
-
-                if (!isNaN(lat) && !isNaN(lng)) {
-                    const marker = L.circleMarker([lat, lng], {
-                        radius: 8, fillColor: "#27ae60", color: "#fff", weight: 2, fillOpacity: 0.9
-                    }).addTo(map);
-
-                    // Tıklanınca açılacak olan Popup içeriği
-                    marker.bindPopup(`
-                        <div style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; min-width: 180px;">
-                            <div style="font-size: 14px; font-weight: 600; color: #1d1d1f; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 8px; margin-bottom: 8px;">
-                                AĞAÇ BİLGİLERİ
-                            </div>
-                            
-                            <div style="margin-bottom: 5px;">
-                                <span style="font-size: 11px; color: #86868b; text-transform: uppercase; font-weight: 600;">A Sütunu Başlığınız:</span><br>
-                                <span style="font-size: 14px; color: #1d1d1f; font-weight: 500;">${agac['ID'] || '-'}</span>
-                            </div>
-
-                            <div style="margin-bottom: 5px;">
-                                <span style="font-size: 11px; color: #86868b; text-transform: uppercase; font-weight: 600;">B Sütunu Başlığınız:</span><br>
-                                <span style="font-size: 14px; color: #1d1d1f; font-weight: 500;">${agac['Ağaç Türü'] || '-'}</span>
-                            </div>
-
-                            <div style="margin-bottom: 5px;">
-                                <span style="font-size: 11px; color: #86868b; text-transform: uppercase; font-weight: 600;">C Sütunu Başlığınız:</span><br>
-                                <span style="font-size: 14px; color: #1d1d1f; font-weight: 500;">${agac['Gövde Çapı'] || '-'}</span>
-                            </div>
-
-                            <div style="margin-bottom: 5px;">
-                                <span style="font-size: 11px; color: #86868b; text-transform: uppercase; font-weight: 600;">D Sütunu Başlığınız:</span><br>
-                                <span style="font-size: 14px; color: #1d1d1f; font-weight: 500;">${agac['Ağaç Boyu'] || '-'}</span>
-                            </div>
-
-                            <div style="margin-bottom: 5px;">
-                                <span style="font-size: 11px; color: #86868b; text-transform: uppercase; font-weight: 600;">E Sütunu Başlığınız:</span><br>
-                                <span style="font-size: 14px; color: #1d1d1f; font-weight: 500;">${agac['Tepe Tacı Çapı'] || '-'}</span>
-                            </div>
-
-                            <div style="margin-bottom: 5px;">
-                                <span style="font-size: 11px; color: #86868b; text-transform: uppercase; font-weight: 600;">F Sütunu Başlığınız:</span><br>
-                                <span style="font-size: 14px; color: #1d1d1f; font-weight: 500;">${agac['Tahmini Yaş'] || '-'}</span>
-                            </div>
+                if (data.length > 0) {
+                    const ilkSatir = data[0]; 
+                    
+                    document.getElementById('panel-icerik').innerHTML = `
+                        <div class="bilgi-kutu">
+                            <div class="bilgi-etiket">J Sütunu Başlığınız</div>
+                            <div class="bilgi-deger">${ilkSatir['J_Sutunu_Basligi_Neyse_Onu_Yazin'] || '-'}</div>
                         </div>
-                    `);
+                        <div class="bilgi-kutu">
+                            <div class="bilgi-etiket">K Sütunu Başlığınız</div>
+                            <div class="bilgi-deger">${ilkSatir['K_Sutunu_Basligi_Neyse_Onu_Yazin'] || '-'}</div>
+                        </div>
+                        <div class="bilgi-kutu">
+                            <div class="bilgi-etiket">L Sütunu Başlığınız</div>
+                            <div class="bilgi-deger">${ilkSatir['L_Sutunu_Basligi_Neyse_Onu_Yazin'] || '-'}</div>
+                        </div>
+                    `;
                 }
-            });
-        }
-    });
+
+                // Önceden eklenen eski noktaları temizle
+                map.eachLayer((layer) => {
+                    if (layer instanceof L.CircleMarker) { layer.remove(); }
+                });
+
+                data.forEach(agac => {
+                    const lat = parseFloat(agac['Enlem']);
+                    const lng = parseFloat(agac['Boylam']);
+
+                    if (!isNaN(lat) && !isNaN(lng)) {
+                        const marker = L.circleMarker([lat, lng], {
+                            radius: 8, fillColor: "#27ae60", color: "#fff", weight: 2, fillOpacity: 0.9
+                        }).addTo(map);
+
+                        marker.bindPopup(`
+                            <div style="min-width: 180px;">
+                                <div style="font-size: 14px; font-weight: 600; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 8px; margin-bottom: 8px;">AĞAÇ BİLGİLERİ</div>
+                                <div style="margin-bottom: 5px;"><span style="font-size: 11px; color: #86868b; text-transform: uppercase; font-weight: 600;">A Sütunu:</span><br><span style="font-size: 14px; font-weight: 500;">${agac['A_Sutunu_Basligi'] || '-'}</span></div>
+                                <div style="margin-bottom: 5px;"><span style="font-size: 11px; color: #86868b; text-transform: uppercase; font-weight: 600;">B Sütunu:</span><br><span style="font-size: 14px; font-weight: 500;">${agac['B_Sutunu_Basligi'] || '-'}</span></div>
+                                <div style="margin-bottom: 5px;"><span style="font-size: 11px; color: #86868b; text-transform: uppercase; font-weight: 600;">C Sütunu:</span><br><span style="font-size: 14px; font-weight: 500;">${agac['C_Sutunu_Basligi'] || '-'}</span></div>
+                            </div>
+                        `);
+                    }
+                });
+            }
+        });
+    }
+
+    updateData();
+    setInterval(updateData, 300000); // 5 dakikada bir Excel'i kontrol et
 </script>
+<!-- ETİKET BURADA BİTİYOR -->
 
 </body>
 </html>
