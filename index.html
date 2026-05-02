@@ -3,15 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sen-Tree - Kentsel Ekosistem Hizmetleri Takip Sistemi</title>
+    <title>SenTree - Kentsel Ekosistem Hizmetleri</title>
     
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- PapaParse JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
     <style>
         body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         #map { height: 100vh; width: 100vw; background-color: #161616; z-index: 1; }
 
+        /* --- SOL PANEL TASARIMI --- */
         .sidebar {
             position: fixed; top: 20px; left: 20px; bottom: 20px; width: 320px;       
             background-color: rgba(30, 30, 30, 0.6); 
@@ -27,24 +30,24 @@
         .sidebar-location { margin: 4px 0 0 0; font-size: 14px; font-weight: 600; color: #ffffff; opacity: 0.9; }
         .sidebar-subtitle { margin: 12px 0 0 0; font-size: 10px; color: #2ecc71; text-transform: uppercase; letter-spacing: 1px; line-height: 1.4; font-weight: 700; }
         .sidebar-powered { text-align: right; margin-top: 12px; font-size: 10px; color: #888888; font-style: italic; }
+        
         .sidebar-content { padding: 20px; flex-grow: 1; overflow-y: auto; }
 
+        /* VERİ KARTLARI */
         .excel-kutu-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
         .veri-kutusu { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 15px; text-align: center; }
         .veri-baslik { font-size: 11px; color: #aaaaaa; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
         .veri-deger { font-size: 18px; font-weight: 600; color: #ffffff; }
 
-        /* --- PARLAMA ANİMASYONU --- */
+        /* PARLAMA ANİMASYONU */
         @keyframes pulse-marker {
             0% { stroke-width: 2; stroke-opacity: 0.8; }
             50% { stroke-width: 15; stroke-opacity: 0.1; }
             100% { stroke-width: 2; stroke-opacity: 0.8; }
         }
+        .pulsing-marker { animation: pulse-marker 2.5s infinite ease-in-out; }
 
-        .pulsing-marker {
-            animation: pulse-marker 2.5s infinite ease-in-out;
-        }
-
+        /* POPUP STİLLERİ */
         .leaflet-popup-content-wrapper, .leaflet-popup-tip {
             background-color: rgba(30, 30, 30, 0.9) !important;
             backdrop-filter: blur(10px); color: #e0e0e0 !important; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;
@@ -57,8 +60,8 @@
 
     <div class="sidebar">
         <div class="sidebar-header">
-            <div class="sidebar-title">Project Sen-Tree</div>
-            <div class="sidebar-location">📍LIFEPARK İSTANBUL</div>
+            <div class="sidebar-title">Project SenTree</div>
+            <div class="sidebar-location">LIFEPARK İSTANBUL</div>
             <p class="sidebar-subtitle">GIS TABANLI KENTSEL EKOSİSTEM HİZMETLERİ TAKİP SİSTEMİ</p>
             <div class="sidebar-powered">Powered by CLIMERA Projects</div>
         </div>
@@ -72,17 +75,24 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
+        // --- 1. HARİTA AYARLARI VE HASSAS ZOOM ---
         var guneyBati = L.latLng(41.1600, 28.9800); 
         var kuzeyDogu = L.latLng(41.1800, 29.0100); 
         var sinirlar = L.latLngBounds(guneyBati, kuzeyDogu);
 
         var map = L.map('map', { 
-            zoomControl: false, attributionControl: false, 
-            maxBounds: sinirlar, maxBoundsViscosity: 1.0, minZoom: 13                
+            zoomControl: false, 
+            attributionControl: false, 
+            maxBounds: sinirlar, 
+            maxBoundsViscosity: 1.0, 
+            minZoom: 13,
+            zoomSnap: 0.1,  // 0.1'lik adımlarla zoom yapabilmeyi sağlar
+            zoomDelta: 0.1
         });
 
         var globalAnaKatman; 
 
+        // --- 2. VERİ YÜKLEME VE GÖRÜNÜM AYARI ---
         fetch('veri.geojson')
             .then(response => response.json())
             .then(data => {
@@ -90,11 +100,17 @@
                     style: { color: "darkgray", weight: 1, opacity: 0.8, fillColor: "gray", fillOpacity: 0.15 }
                 }).addTo(map);
 
+                // Haritayı panele göre sığdır
                 map.fitBounds(globalAnaKatman.getBounds(), {
                     paddingTopLeft: [380, 20], paddingBottomRight: [20, 20]
                 });
+
+                // Zoom seviyesini 16 ile 17 arasındaki o mükemmel noktaya getir (Örn: 16.5)
+                var optimumZoom = map.getZoom() + 0.4; 
+                map.setZoom(optimumZoom);
             });
 
+        // --- 3. CANLI VERİLER VE PARLAYAN İKONLAR ---
         var csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTd-AbM2ztRwxYmIp-58BvishVCJG3xKSQj-WgrI3_J6_ODF-zHTgM9rYmb-lI9LwRvdB0LMZFJFsn4/pub?output=csv";
 
         Papa.parse(csvUrl, {
@@ -121,18 +137,19 @@
                             var marker = L.circleMarker([lat, lng], {
                                 radius: 8, 
                                 fillColor: "#2ecc71", 
-                                color: "#2ecc71", // Parlama animasyonu için ana renk
+                                color: "#2ecc71", 
                                 weight: 2, 
                                 fillOpacity: 0.9,
-                                className: 'pulsing-marker' // CSS animasyonu eklendi
+                                className: 'pulsing-marker'
                             }).bindPopup(popupHTML).addTo(map);
 
-                            // Dokunma alanını görünmez bir şekilde artır
-                            marker.on('mouseover', function(e) { this.setStyle({weight: 20}); });
-                            marker.on('mouseout', function(e) { this.setStyle({weight: 2}); });
+                            // Dokunma alanı hassasiyetini artır
+                            marker.on('mouseover', function() { this.setStyle({weight: 20}); });
+                            marker.on('mouseout', function() { this.setStyle({weight: 2}); });
                         }
                     }
 
+                    // Panel Metriklerini Güncelle
                     var panelSutunlari = [9, 10, 11, 12, 13, 14]; 
                     var sonGuncelVeri = veriler.slice().reverse().find(s => s[9]);
 
@@ -148,11 +165,14 @@
             }
         });
 
+        // --- 4. 15 SANİYE İNAKTİF BAŞA DÖNME ---
         var idleTimer;
         function resetView() {
             if (globalAnaKatman) {
                 map.closePopup(); 
                 map.fitBounds(globalAnaKatman.getBounds(), { paddingTopLeft: [380, 20], paddingBottomRight: [20, 20], animate: true });
+                // Geri döndüğünde o özel zoom seviyesini tekrar uygula
+                setTimeout(() => { map.setZoom(map.getZoom() + 0.4); }, 1000);
             }
         }
         function startTimer() { clearTimeout(idleTimer); idleTimer = setTimeout(resetView, 15000); }
