@@ -105,13 +105,7 @@
     const imageBounds = [[41.1666, 28.9914], [41.1730, 29.0029]];
     
     // Haritayı başlat
-    const map = L.map('map', {
-        minZoom: 10, // Kullanıcının çok fazla zoom out yapmasını fiziksel olarak da engellemek için bunu 15'e çektik
-        maxZoom: 22,
-        zoomControl: false, // + ve - butonlarını gizler
-        maxBounds: imageBounds, // Haritayı görselin sınırlarına kilitler
-        maxBoundsViscosity: 1.0 // Sınıra çarpınca geri sekme efektini sertleştirir (boşluğa gitmeyi tamamen engeller)
-    }).fitBounds(imageBounds);
+    const map = L.map('map', { zoomControl: false }).setView([41.1698, 28.9971], 15);
 
     // PNG Görselinizi haritaya yerleştirin
     const mapImageUrl = 'harita.png'; 
