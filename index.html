@@ -105,7 +105,22 @@
     const imageBounds = [[41.1666, 28.9914], [41.1730, 29.0029]];
     
     // Haritayı başlat
-    const map = L.map('map', { zoomControl: false }).setView([41.1698, 28.9971], 15);
+    // Android uyumlu, Canvas tabanlı harita ayarları
+    const map = L.map('map', {
+        minZoom: 10, 
+        maxZoom: 22,
+        zoomControl: false,
+        preferCanvas: true // ANDROID İÇİN KRİTİK EKLENTİ: Çizimleri tek bir tuvalde birleştirir
+    });
+
+    const mapImageUrl = 'harita.png'; 
+    L.imageOverlay(mapImageUrl, imageBounds).addTo(map);
+
+    // Android tabletin ekran boyutlarını tam anlaması için yarım saniye bekleyip haritayı oturtuyoruz
+    setTimeout(function() {
+        map.invalidateSize(); // Ekran boyutunu yeniden hesapla
+        map.fitBounds(imageBounds); // Haritayı çerçeveye sığdır
+    }, 500);
 
     // PNG Görselinizi haritaya yerleştirin
     const mapImageUrl = 'harita.png'; 
