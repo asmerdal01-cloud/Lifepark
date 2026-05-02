@@ -133,7 +133,7 @@
             .catch(err => console.error("GeoJSON yüklenemedi:", err));
 
         // --- EXCEL (GOOGLE SHEETS) VERİ ÇEKME ---
-        var csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTd-AbM2ztRwxYmIp-58BvishVCJG3xKSQj-WgrI3_J6_ODF-zHTgM9rYmb-lI9LwRvdB0LMZFJFsn4/pub?gid=2133565060&single=true&output=csv";
+        var csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTd-AbM2ztRwxYmIp-58BvishVCJG3xKSQj-WgrI3_J6_ODF-zHTgM9rYmb-lI9LwRvdB0LMZFJFsn4/pub?output=csv";
 
         Papa.parse(csvUrl, {
             download: true,
