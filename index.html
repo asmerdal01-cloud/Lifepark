@@ -5,13 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SenTree - GIS Tabanlı Kentsel Ekosistem Hizmetleri Takip Sistemi</title>
     
-    <!-- Leaflet Temel CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
-    <!-- Marker Cluster CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
     <style>
@@ -41,14 +35,6 @@
         .veri-kutusu { background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 12px; text-align: center; }
         .veri-baslik { font-size: 10px; color: #999; text-transform: uppercase; margin-bottom: 6px; }
         .veri-deger { font-size: 16px; font-weight: 600; color: #ffffff; }
-
-        /* KÜMELEME SİMGELERİ ÖZELLEŞTİRME */
-        .marker-cluster-small { background-color: rgba(46, 204, 113, 0.6); }
-        .marker-cluster-small div { background-color: rgba(46, 204, 113, 0.9); color: white; font-weight: bold;}
-        .marker-cluster-medium { background-color: rgba(39, 174, 96, 0.6); }
-        .marker-cluster-medium div { background-color: rgba(39, 174, 96, 0.9); color: white; font-weight: bold;}
-        .marker-cluster-large { background-color: rgba(25, 111, 61, 0.6); }
-        .marker-cluster-large div { background-color: rgba(25, 111, 61, 0.9); color: white; font-weight: bold;}
 
         /* --- SADELEŞTİRİLMİŞ ZOOM REHBERİ --- */
         .zoom-guide {
@@ -88,7 +74,7 @@
             <div class="sidebar-powered">Powered by CLIMERA Projects</div>
         </div>
         <div class="sidebar-content">
-            <div id="excel-verileri">Veriler yükleniyor...</div>
+            <div id="excel-verileri"></div>
         </div>
     </div>
 
@@ -102,9 +88,7 @@
 
     <div id="map"></div>
 
-    <!-- Leaflet JS ve Marker Cluster JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
 
     <script>
         // --- 1. HARİTA AYARLARI ---
@@ -119,12 +103,6 @@
         });
 
         var globalAnaKatman; 
-
-        // KÜMELEME GRUBUNU TANIMLA
-        var markerClusters = L.markerClusterGroup({
-            showCoverageOnHover: false, // Üzerine gelince alanı çizmesin
-            maxClusterRadius: 50 // Kümelerin oluşma hassasiyeti (Piksel cinsinden)
-        });
 
         // --- 2. VERİ YÜKLEME ---
         fetch('veri.geojson')
@@ -161,40 +139,21 @@
 
                             var marker = L.circleMarker([lat, lng], {
                                 radius: 8, fillColor: "#2ecc71", color: "#2ecc71", weight: 2, fillOpacity: 0.8, className: 'pulsing-marker'
-                            }).bindPopup(popupHTML);
+                            }).bindPopup(popupHTML).addTo(map);
 
                             marker.on('touchstart', function() { this.setStyle({weight: 15}); });
                             marker.on('touchend', function() { this.setStyle({weight: 2}); });
-
-                            // MARKER'I HARİTAYA DEĞİL, KÜMELEME GRUBUNA EKLE
-                            markerClusters.addLayer(marker);
                         }
                     }
-
-                    // KÜMELEME GRUBUNU HARİTAYA EKLE
-                    map.addLayer(markerClusters);
-
                     var panelSutunlari = [9, 10, 11, 12, 13, 14]; 
-                    
-                    // Veriyi kontrol et ve son dolu veriyi bul (Daha güvenli yöntem)
-                    var sonGuncelVeri = null;
-                    for(var k = veriler.length - 1; k > 0; k--) {
-                        if(veriler[k] && veriler[k][9] && veriler[k][9].trim() !== "") {
-                            sonGuncelVeri = veriler[k];
-                            break;
-                        }
-                    }
-
+                    var sonGuncelVeri = veriler.slice().reverse().find(s => s[9]);
                     if (sonGuncelVeri) {
                         var html = '<div class="excel-kutu-container">';
                         panelSutunlari.forEach(index => {
-                            var val = sonGuncelVeri[index] || "0";
-                            html += `<div class="veri-kutusu"><div class="veri-baslik">${basliklar[index]}</div><div class="veri-deger">${val}</div></div>`;
+                            html += `<div class="veri-kutusu"><div class="veri-baslik">${basliklar[index]}</div><div class="veri-deger">${sonGuncelVeri[index]}</div></div>`;
                         });
                         html += '</div>';
                         document.getElementById('excel-verileri').innerHTML = html;
-                    } else {
-                         document.getElementById('excel-verileri').innerHTML = "Gösterilecek panel verisi bulunamadı.";
                     }
                 }
             }
