@@ -5,18 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SenTree - Kentsel Ekosistem Hizmetleri</title>
     
-    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
-    <!-- PapaParse JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     
     <style>
         body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        
         #map { height: 100vh; width: 100vw; background-color: #161616; z-index: 1; }
 
-        /* SOL PANEL - GLASSMORPHISM */
+        /* --- SOL PANEL: ESKİ ŞIK HALİ --- */
         .sidebar {
             position: fixed; top: 20px; left: 20px; bottom: 20px; width: 320px;       
             background-color: rgba(30, 30, 30, 0.6); 
@@ -28,109 +24,97 @@
         }
 
         .sidebar-header { padding: 25px 20px 20px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background-color: rgba(0, 0, 0, 0.2); }
-        .sidebar-title { margin: 0; font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: 1px; }
-        .sidebar-subtitle { margin: 8px 0 0 0; font-size: 10px; color: #2ecc71; text-transform: uppercase; letter-spacing: 0.8px; line-height: 1.4; font-weight: 600; }
-        .sidebar-powered { text-align: right; margin-top: 12px; font-size: 10px; color: #888888; font-style: italic; letter-spacing: 0.5px; }
+        
+        /* BAŞLIKLAR */
+        .sidebar-title { margin: 0; font-size: 26px; font-weight: 700; color: #ffffff; letter-spacing: 0.5px; }
+        .sidebar-location { margin: 4px 0 0 0; font-size: 14px; font-weight: 600; color: #ffffff; opacity: 0.9; }
+        .sidebar-subtitle { margin: 12px 0 0 0; font-size: 10px; color: #2ecc71; text-transform: uppercase; letter-spacing: 1px; line-height: 1.4; font-weight: 700; }
+        .sidebar-powered { text-align: right; margin-top: 12px; font-size: 10px; color: #888888; font-style: italic; }
 
         .sidebar-content { padding: 20px; flex-grow: 1; overflow-y: auto; }
 
-        /* EXCEL VERİ KARTLARI */
+        /* VERİ KARTLARI */
         .excel-kutu-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 10px; }
         .veri-kutusu { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 15px; text-align: center; transition: all 0.3s ease; }
         .veri-kutusu:hover { background: rgba(255, 255, 255, 0.1); transform: translateY(-2px); }
         .veri-baslik { font-size: 11px; color: #aaaaaa; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.5px; }
         .veri-deger { font-size: 18px; font-weight: 600; color: #ffffff; }
-        .yukleniyor-metni { font-size: 14px; color: #888; font-style: italic; text-align: center; margin-top: 20px; }
 
         /* POPUP TASARIMI */
         .leaflet-popup-content-wrapper, .leaflet-popup-tip {
             background-color: rgba(30, 30, 30, 0.9) !important;
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            color: #e0e0e0 !important; border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5); border-radius: 12px;
+            backdrop-filter: blur(10px); color: #e0e0e0 !important; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;
         }
-
-        .agac-popup { min-width: 220px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .agac-popup-baslik { font-size: 15px; font-weight: 600; color: #2ecc71; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px; margin-bottom: 12px; margin-top: 0; }
+        .agac-popup-baslik { font-size: 15px; font-weight: 600; color: #2ecc71; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px; margin-bottom: 12px; }
         .agac-popup-satir { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
-        .agac-popup-label { color: #aaaaaa; }
-        .agac-popup-deger { color: #ffffff; font-weight: 500; text-align: right; margin-left: 15px; word-break: break-word;}
     </style>
 </head>
 <body>
 
-    <div class="sidebar-header">
-    <h1 class="sidebar-title">Project SenTree</h1>
-    <!-- Lokasyon bilgisi olarak LIFEPARK İSTANBUL eklendi -->
-    <div style="font-size: 12px; color: #aaaaaa; margin-top: 5px; font-weight: 500;">
-        <i class="location-icon">📍</i> LIFEPARK İSTANBUL
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <!-- İSTEDİĞİN TÜM EKLEMELER BURADA -->
+            <div class="sidebar-title">Project SenTree</div>
+            <div class="sidebar-location">LIFEPARK İSTANBUL</div>
+            <p class="sidebar-subtitle">GIS TABANLI KENTSEL EKOSİSTEM HİZMETLERİ TAKİP SİSTEMİ</p>
+            <div class="sidebar-powered">Powered by CLIMERA Projects</div>
+        </div>
+        <div class="sidebar-content">
+            <div id="excel-verileri"></div>
+        </div>
     </div>
-    <p class="sidebar-subtitle">GIS TABANLI KENTSEL EKOSİSTEM HİZMETLERİ TAKİP SİSTEMİ</p>
-    <div class="sidebar-powered">Powered by CLIMERA Projects</div>
-</div>
 
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // --- 1. HARİTA VE GENİŞLETİLMİŞ SINIRLAR ---
+        // Harita Sınırları
         var guneyBati = L.latLng(41.1600, 28.9800); 
         var kuzeyDogu = L.latLng(41.1800, 29.0100); 
         var sinirlar = L.latLngBounds(guneyBati, kuzeyDogu);
 
         var map = L.map('map', { 
-            zoomControl: false,
-            attributionControl: false, 
-            maxBounds: sinirlar,       
-            maxBoundsViscosity: 1.0,   
-            minZoom: 13                
+            zoomControl: false, attributionControl: false, 
+            maxBounds: sinirlar, maxBoundsViscosity: 1.0, minZoom: 13                
         });
 
         var globalAnaKatman; 
 
-        // --- 2. GEOJSON VE OTOMATİK SIĞDIRMA ---
+        // GeoJSON Yükleme
         fetch('veri.geojson')
-            .then(response => { if (response.ok) return response.json(); })
+            .then(response => response.json())
             .then(data => {
-                if(data) {
-                    globalAnaKatman = L.geoJSON(data, {
-                        style: function () {
-                            return { color: "darkgray", weight: 1, opacity: 0.8, fillColor: "gray", fillOpacity: 0.15 };
-                        }
-                    }).addTo(map);
+                globalAnaKatman = L.geoJSON(data, {
+                    style: { color: "darkgray", weight: 1, opacity: 0.8, fillColor: "gray", fillOpacity: 0.15 }
+                }).addTo(map);
 
-                    map.fitBounds(globalAnaKatman.getBounds(), {
-                        paddingTopLeft: [380, 20],   
-                        paddingBottomRight: [20, 20]
-                    });
-                }
+                map.fitBounds(globalAnaKatman.getBounds(), {
+                    paddingTopLeft: [380, 20], paddingBottomRight: [20, 20]
+                });
             });
 
-        // --- 3. GOOGLE SHEETS (HESAPLANAN FAYDA VERİLERİ) ---
+        // Google Sheets Verileri
         var csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTd-AbM2ztRwxYmIp-58BvishVCJG3xKSQj-WgrI3_J6_ODF-zHTgM9rYmb-lI9LwRvdB0LMZFJFsn4/pub?output=csv";
 
         Papa.parse(csvUrl, {
-            download: true,
-            header: false, 
+            download: true, header: false, 
             complete: function(results) {
                 var veriler = results.data;
                 if(veriler && veriler.length > 1) {
                     var basliklar = veriler[0]; 
-                    var popupSutunlari = [0, 1, 2, 3, 4, 5, 8]; 
-
-                    // Ağaç noktaları ve Fayda Pop-up'ları
+                    
+                    // Ağaçlar ve Popuplar
                     for (var i = 1; i < veriler.length; i++) {
                         var satir = veriler[i];
                         var lat = parseFloat(satir[6]); 
                         var lng = parseFloat(satir[7]); 
 
                         if (!isNaN(lat) && !isNaN(lng)) {
-                            var popupHTML = "<div class='agac-popup'><h3 class='agac-popup-baslik'>Biyometrik Analiz</h3>";
-                            popupSutunlari.forEach(colIdx => {
-                                if(satir[colIdx] && satir[colIdx].trim() !== "") {
-                                    var baslik = basliklar[colIdx] ? basliklar[colIdx] : ("Sütun " + colIdx);
-                                    popupHTML += `<div class="agac-popup-satir"><span class="agac-popup-label">${baslik}</span><span class="agac-popup-deger">${satir[colIdx]}</span></div>`;
+                            var popupHTML = "<div style='min-width:200px'><h3 class='agac-popup-baslik'>Biyometrik Analiz</h3>";
+                            [0, 1, 2, 3, 4, 5, 8].forEach(colIdx => {
+                                if(satir[colIdx]) {
+                                    popupHTML += `<div class="agac-popup-satir"><span>${basliklar[colIdx]}</span><span style="font-weight:600">${satir[colIdx]}</span></div>`;
                                 }
                             });
                             popupHTML += "</div>";
@@ -141,55 +125,36 @@
                         }
                     }
 
-                    // Panel Toplam Metrikleri
+                    // Panel Metrikleri
                     var panelSutunlari = [9, 10, 11, 12, 13, 14]; 
-                    var sonGuncelVeri = null;
-                    for (var i = veriler.length - 1; i > 0; i--) {
-                        var satir = veriler[i];
-                        var doluMu = false;
-                        for (var j = 0; j < panelSutunlari.length; j++) {
-                            if (satir[panelSutunlari[j]] && satir[panelSutunlari[j]].trim() !== "") { doluMu = true; break; }
-                        }
-                        if (doluMu) { sonGuncelVeri = satir; break; }
-                    }
+                    var sonGuncelVeri = veriler.slice().reverse().find(s => s[9]);
 
                     if (sonGuncelVeri) {
-                        var htmlIcerikPanel = '<div class="excel-kutu-container">';
+                        var html = '<div class="excel-kutu-container">';
                         panelSutunlari.forEach(index => {
-                            var baslikYazisiPanel = basliklar[index] ? basliklar[index] : ("Sütun " + index);
-                            var degerYazisiPanel = sonGuncelVeri[index] ? sonGuncelVeri[index] : "-";
-                            htmlIcerikPanel += `<div class="veri-kutusu"><div class="veri-baslik">${baslikYazisiPanel}</div><div class="veri-deger">${degerYazisiPanel}</div></div>`;
+                            html += `<div class="veri-kutusu"><div class="veri-baslik">${basliklar[index]}</div><div class="veri-deger">${sonGuncelVeri[index]}</div></div>`;
                         });
-                        htmlIcerikPanel += '</div>';
-                        document.getElementById('excel-verileri').innerHTML = htmlIcerikPanel;
+                        html += '</div>';
+                        document.getElementById('excel-verileri').innerHTML = html;
                     }
                 }
             }
         });
 
-        // --- 4. KİOSK İNAKTİF BAŞA DÖNME (15 SANİYE) ---
-        var inaktifZamanlayici;
-        function sistemiBasaDondur() {
+        // 15 Saniye Başa Dönme
+        var idleTimer;
+        function resetView() {
             if (globalAnaKatman) {
                 map.closePopup(); 
-                map.fitBounds(globalAnaKatman.getBounds(), {
-                    paddingTopLeft: [380, 20],   
-                    paddingBottomRight: [20, 20],
-                    animate: true, duration: 1
-                });
+                map.fitBounds(globalAnaKatman.getBounds(), { paddingTopLeft: [380, 20], paddingBottomRight: [20, 20], animate: true });
             }
         }
-        function zamanlayiciyiSifirla() {
-            clearTimeout(inaktifZamanlayici);
-            inaktifZamanlayici = setTimeout(sistemiBasaDondur, 15000);
-        }
-        window.onload = zamanlayiciyiSifirla;
-        document.onmousemove = zamanlayiciyiSifirla;
-        document.ontouchstart = zamanlayiciyiSifirla;
-        document.onclick = zamanlayiciyiSifirla;
-        map.on('dragstart', zamanlayiciyiSifirla);
-        map.on('zoomstart', zamanlayiciyiSifirla);
-
+        function startTimer() { clearTimeout(idleTimer); idleTimer = setTimeout(resetView, 15000); }
+        
+        window.onload = startTimer;
+        document.onmousemove = startTimer;
+        document.ontouchstart = startTimer;
+        map.on('dragstart', startTimer);
     </script>
 </body>
 </html>
